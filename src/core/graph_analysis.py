@@ -66,40 +66,43 @@ def densidade_rede(G: nx.DiGraph):
     print(f"\nDensidade da rede: {densidade:.4f}")
 
 
-def detectar_comunidades(G: nx.DiGraph):
+def detectar_comunidades(G: nx.Graph, return_communities: bool = False):
+    """
+    Detecta comunidades no grafo usando o algoritmo greedy modularity.
+    
+    Args:
+        G: Grafo de entrada (pode ser direcionado ou não)
+        return_communities: Se True, retorna a lista de comunidades
+        
+    Returns:
+        Se return_communities=True, retorna lista de comunidades
+        Caso contrário, retorna dicionário {nó: comunidade}
+    """
     print("\n=== Detecção de Comunidades ===")
 
-    # Subgrafo apenas com nós de tipo 'local'
+    # 1. Pré-processamento: criar subgrafo não-direcionado apenas com locais
     locais = [n for n, d in G.nodes(data=True) if d.get('tipo') == 'local']
     subgrafo = G.subgraph(locais).to_undirected()
 
     if subgrafo.number_of_nodes() == 0:
         print("Nenhum nó 'local' disponível para análise de comunidades.")
-        return
+        return [] if return_communities else {}
 
-    comunidades = list(greedy_modularity_communities(subgrafo))
-    print(f"Total de comunidades detectadas: {len(comunidades)}")
-
-    # Mapeia cada nó à comunidade que pertence
-    node_colors = {}
-    for i, comunidade in enumerate(comunidades):
-        for no in comunidade:
-            node_colors[no] = i
-
-    # Visualização
-    pos = nx.spring_layout(subgrafo, seed=42)
-    plt.figure(figsize=(14, 10))
-    nx.draw(
-        subgrafo,
-        pos,
-        node_color=[node_colors.get(n, 0) for n in subgrafo.nodes()],
-        with_labels=True,
-        node_size=500,
-        font_size=8,
-        cmap=plt.cm.get_cmap("tab20"),
-        edge_color="lightgray"
-    )
-    plt.title("Comunidades Regionais Detectadas")
-    plt.axis("off")
-    plt.tight_layout()
-    plt.show()
+    # 2. Detecção de comunidades
+    try:
+        comunidades = list(greedy_modularity_communities(subgrafo))
+        print(f"Total de comunidades detectadas: {len(comunidades)}")
+        
+        # 3. Mapeamento dos resultados
+        node_to_community = {}
+        for i, com in enumerate(comunidades):
+            for node in com:
+                node_to_community[node] = i
+                
+        if return_communities:
+            return comunidades
+        return node_to_community
+        
+    except Exception as e:
+        print(f"Erro na detecção de comunidades: {str(e)}")
+        return [] if return_communities else {}

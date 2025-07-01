@@ -34,33 +34,25 @@ def main():
         print(f"- {len([n for n, d in G.nodes(data=True) if d.get('tipo') == 'decada'])} décadas")
         print(f"- {len(G.edges())} conexões")
 
-        # Visualização 1: Subgrafo da década de 1520
-        decada = '1520'
-        if decada in G.nodes:
-            vizinhos = list(G.neighbors(decada))
-            nos_subgrafo = [decada] + vizinhos
-            visualizar_subgrafo(G, nos_subgrafo, f"Subgrafo da década de {decada}")
-        else:
-            print(f"[AVISO] A década '{decada}' não está presente no grafo.")
+        #  # Visualização 1: Subgrafo da década com mais julgamentos
+        # decada_top = df['decade'].value_counts().idxmax()
+        # nos_decada = [u for u, v in G.edges() if v == decada_top] + [decada_top]
+        # visualizar_subgrafo(G, nos_decada, f"Subgrafo da década com mais julgamentos ({decada_top})")
 
-        # Visualização 2: Componentes conectados significativos da Alemanha
-        germany_nodes = [n for n, d in G.nodes(data=True) if d.get('tipo') == 'local' and d.get('pais') == 'Germany']
-        subG = G.subgraph(germany_nodes).copy().to_undirected()
-        componentes = list(nx.connected_components(subG))
+        # Visualização 2: Subgrafo da década com mais mortes
+        decada_top_mortes = df.groupby('decade')['deaths'].sum().idxmax()
+        nos_decada_mortes = [u for u, v in G.edges() if v == decada_top_mortes] + [decada_top_mortes]
+        visualizar_subgrafo(G, nos_decada_mortes, f"Subgrafo da década com mais mortes ({decada_top_mortes})")
 
-        for i, c in enumerate(componentes):
-            if len(c) >= 5:
-                visualizar_subgrafo(subG, list(c), f"Subgrafo da Alemanha - Componente {i+1}")
 
-        # Visualização 3: Top 10 nós com maior grau + seus vizinhos
-        graus = dict(G.degree())
-        top_10 = sorted(graus, key=graus.get, reverse=True)[:10]
-        nos_expandidos = set(top_10)
-        for n in top_10:
-            nos_expandidos.update(G.neighbors(n))
-        visualizar_subgrafo(G, list(nos_expandidos), "Top 10 nós com maior grau e seus vizinhos")
 
-        # Análises estatísticas e estruturais
+
+
+       
+       
+       
+       
+       
         resultados = executar_analise_completa(df, G)
         analisar_grafo(G)
         mostrar_nos_com_maior_grau(G)
