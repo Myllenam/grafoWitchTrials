@@ -10,7 +10,7 @@ from core.graph_analysis import (analisar_grafo, mostrar_nos_com_maior_grau,
                                   analisar_centralidades, detectar_comunidades)
 from core.visualization import visualizar_subgrafo
 import networkx as nx
-
+from core.ml_analysis import analise_classificacao, analise_clusterizacao, visualizar_subgrafos_temporais
 
 def main():
     print("Configurando análise de julgamentos históricos...")
@@ -34,24 +34,28 @@ def main():
         print(f"- {len([n for n, d in G.nodes(data=True) if d.get('tipo') == 'decada'])} décadas")
         print(f"- {len(G.edges())} conexões")
 
-        #  # Visualização 1: Subgrafo da década com mais julgamentos
-        # decada_top = df['decade'].value_counts().idxmax()
-        # nos_decada = [u for u, v in G.edges() if v == decada_top] + [decada_top]
-        # visualizar_subgrafo(G, nos_decada, f"Subgrafo da década com mais julgamentos ({decada_top})")
+      # Visualização 1: Subgrafo da década com mais julgamentos
+        decada_top = df['decade'].value_counts().idxmax()
+        nos_decada = [u for u, v in G.edges() if v == decada_top] + [decada_top]
+        visualizar_subgrafo(G, nos_decada, f"Subgrafo da década com mais julgamentos ({decada_top})")
 
         # Visualização 2: Subgrafo da década com mais mortes
         decada_top_mortes = df.groupby('decade')['deaths'].sum().idxmax()
         nos_decada_mortes = [u for u, v in G.edges() if v == decada_top_mortes] + [decada_top_mortes]
         visualizar_subgrafo(G, nos_decada_mortes, f"Subgrafo da década com mais mortes ({decada_top_mortes})")
+        
+         # Visualização 3: Subgrafo da localidade com maior taxa de mortalidade
+        df_valid = df[df['tried'] > 0].copy()
+        df_valid['taxa_mortalidade'] = df_valid['deaths'] / df_valid['tried']
+        local_top_taxa = df_valid.sort_values('taxa_mortalidade', ascending=False).iloc[0]['localizacao']
+        nos_local_taxa = [local_top_taxa]
+        if local_top_taxa in G:
+            nos_local_taxa += list(G.neighbors(local_top_taxa))
+            visualizar_subgrafo(G, nos_local_taxa, f"Localidade com maior taxa de mortalidade ({local_top_taxa})")
+        else:
+            print(f"[AVISO] Localização '{local_top_taxa}' não encontrada no grafo.")
 
 
-
-
-
-       
-       
-       
-       
        
         resultados = executar_analise_completa(df, G)
         analisar_grafo(G)
@@ -89,7 +93,10 @@ def main():
         if resultados['taxas_mortalidade_geral'] is not None:
             print("\n**4. Taxas de mortalidade baseada na quantidade de julgamentos:**")
             mostrar_taxa_mortalidade(df)
-
+        analise_classificacao(df)
+        analise_clusterizacao(df)
+        visualizar_subgrafos_temporais(G, df)
+        
     except FileNotFoundError:
         print("\nERRO: O arquivo 'trials.csv' não foi encontrado. Por favor, verifique o caminho do arquivo.")
     except Exception as e:
