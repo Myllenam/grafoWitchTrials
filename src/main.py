@@ -14,7 +14,7 @@ from core.ml_analysis import analise_classificacao, analise_clusterizacao, visua
 
 def main():
     print("Configurando análise de julgamentos históricos...")
-    caminho_csv = 'src/trials.csv'
+    caminho_csv = 'trials.csv'
 
     try:
         df = carregar_dados(caminho_csv)
