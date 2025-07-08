@@ -13,16 +13,14 @@ def construir_grafo(df: pd.DataFrame) -> nx.DiGraph:
         julgamentos = row['tried']
         mortes = row['deaths']
 
-        # nó da localização
+
         G.add_node(origem, tipo='local',
                    lat=row['lat'] if pd.notna(row['lat']) else None,
                    lon=row['lon'] if pd.notna(row['lon']) else None,
                    pais=row['gadm_adm0'])
 
-        # nó da década
         G.add_node(decada, tipo='decada')
-
-        # aresta origem → década
+        
         if G.has_edge(origem, decada):
             G.edges[(origem, decada)]['weight'] += julgamentos
             G.edges[(origem, decada)]['mortes'] += mortes
