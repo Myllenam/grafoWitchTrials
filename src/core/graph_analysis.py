@@ -80,6 +80,7 @@ def detectar_comunidades(G: nx.Graph, return_communities: bool = False):
     """
     print("\n=== Detecção de Comunidades ===")
 
+    # 1. Pré-processamento: criar subgrafo não-direcionado apenas com locais
     locais = [n for n, d in G.nodes(data=True) if d.get('tipo') == 'local']
     subgrafo = G.subgraph(locais).to_undirected()
 
@@ -87,10 +88,12 @@ def detectar_comunidades(G: nx.Graph, return_communities: bool = False):
         print("Nenhum nó 'local' disponível para análise de comunidades.")
         return [] if return_communities else {}
 
+    # 2. Detecção de comunidades
     try:
         comunidades = list(greedy_modularity_communities(subgrafo))
         print(f"Total de comunidades detectadas: {len(comunidades)}")
         
+        # 3. Mapeamento dos resultados
         node_to_community = {}
         for i, com in enumerate(comunidades):
             for node in com:
