@@ -1,3 +1,4 @@
+# main.py
 from core.data_loader import carregar_dados
 from core.preprocessing import preprocessar
 from core.graph_builder import construir_grafo
@@ -33,14 +34,17 @@ def main():
         print(f"- {len([n for n, d in G.nodes(data=True) if d.get('tipo') == 'decada'])} décadas")
         print(f"- {len(G.edges())} conexões")
 
+      # Visualização 1: Subgrafo da década com mais julgamentos
         decada_top = df['decade'].value_counts().idxmax()
         nos_decada = [u for u, v in G.edges() if v == decada_top] + [decada_top]
         visualizar_subgrafo(G, nos_decada, f"Subgrafo da década com mais julgamentos ({decada_top})")
 
+        # Visualização 2: Subgrafo da década com mais mortes
         decada_top_mortes = df.groupby('decade')['deaths'].sum().idxmax()
         nos_decada_mortes = [u for u, v in G.edges() if v == decada_top_mortes] + [decada_top_mortes]
         visualizar_subgrafo(G, nos_decada_mortes, f"Subgrafo da década com mais mortes ({decada_top_mortes})")
         
+         # Visualização 3: Subgrafo da localidade com maior taxa de mortalidade
         df_valid = df[df['tried'] > 0].copy()
         df_valid['taxa_mortalidade'] = df_valid['deaths'] / df_valid['tried']
         local_top_taxa = df_valid.sort_values('taxa_mortalidade', ascending=False).iloc[0]['localizacao']
@@ -62,6 +66,7 @@ def main():
         analisar_centralidades(G)
         detectar_comunidades(G)
 
+        # Exibição dos resultados
         print("\n--- Resumo Detalhado dos Resultados ---")
 
         if not resultados['top_paises'].empty:
